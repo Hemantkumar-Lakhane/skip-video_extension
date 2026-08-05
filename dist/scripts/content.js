@@ -263,33 +263,38 @@ function showToast(message) {
   }, 3000);
 }
 
+let bulkTimeoutId = null;
+
 function runBulkAutomation() {
   chrome.storage.local.get("isBulkCompletingReadings", (data) => {
     if (!data.isBulkCompletingReadings) return;
 
-    setTimeout(() => {
-      const completeBtn = findCompleteButton();
-      
-      if (completeBtn && !completeBtn.dataset.lcClicked) {
-        completeBtn.dataset.lcClicked = "true";
-        completeBtn.click();
-        
-        try {
-          chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
-        } catch (e) {}
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      } else {
-        const nextBtn = findNextControl();
-        if (nextBtn) {
-          nextBtn.click();
-        } else {
-          chrome.storage.local.set({ isBulkCompletingReadings: false });
+    if (bulkTimeoutId) clearTimeout(bulkTimeoutId);
+
+    bulkTimeoutId = setTimeout(() => {
+      chrome.storage.local.get("isBulkCompletingReadings", (latestData) => {
+        if (!latestData.isBulkCompletingReadings) return;
+
+        const completeBtn = findCompleteButton();
+        if (completeBtn && !completeBtn.dataset.lcClicked) {
+          completeBtn.dataset.lcClicked = "true";
+          completeBtn.click();
         }
-      }
-    }, 500); // Reduced delay to 500ms
+
+        setTimeout(() => {
+          const nextBtn = findNextControl();
+          if (nextBtn) {
+            nextBtn.click();
+            runBulkAutomation();
+          } else {
+            chrome.storage.local.set({ isBulkCompletingReadings: false });
+            try {
+              chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+            } catch (e) {}
+          }
+        }, 500);
+      });
+    }, 2500);
   });
 }
 
