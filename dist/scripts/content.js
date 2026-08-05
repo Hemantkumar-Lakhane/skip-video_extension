@@ -275,26 +275,33 @@ function runBulkAutomation() {
       chrome.storage.local.get("isBulkCompletingReadings", (latestData) => {
         if (!latestData.isBulkCompletingReadings) return;
 
-        const completeBtn = findCompleteButton();
-        if (completeBtn && !completeBtn.dataset.lcClicked) {
-          completeBtn.dataset.lcClicked = "true";
-          completeBtn.click();
-        }
+        // Scroll to bottom to trigger any lazy loading of the Complete button
+        window.scrollTo(0, document.body.scrollHeight);
 
         setTimeout(() => {
-          const nextBtn = findNextControl();
-          if (nextBtn) {
-            nextBtn.click();
-            runBulkAutomation();
-          } else {
-            chrome.storage.local.set({ isBulkCompletingReadings: false });
-            try {
-              chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
-            } catch (e) {}
+          const completeBtn = findCompleteButton();
+          if (completeBtn && !completeBtn.dataset.lcClicked) {
+            completeBtn.dataset.lcClicked = "true";
+            completeBtn.scrollIntoView({ behavior: "instant", block: "center" });
+            completeBtn.click();
           }
-        }, 500);
+
+          setTimeout(() => {
+            const nextBtn = findNextControl();
+            if (nextBtn) {
+              nextBtn.scrollIntoView({ behavior: "instant", block: "center" });
+              nextBtn.click();
+              runBulkAutomation();
+            } else {
+              chrome.storage.local.set({ isBulkCompletingReadings: false });
+              try {
+                chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+              } catch (e) {}
+            }
+          }, 300);
+        }, 500); // 500ms delay after scrolling
       });
-    }, 2500);
+    }, 1500); // Reduced SPA navigation wait to 1.5s
   });
 }
 
