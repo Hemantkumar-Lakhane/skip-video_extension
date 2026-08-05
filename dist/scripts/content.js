@@ -294,6 +294,7 @@ function runBulkAutomation() {
             
             const completeBtn = findCompleteButton();
             if (completeBtn && !completeBtn.dataset.lcClicked) {
+              showToast("Bulk Automation: Completing reading...");
               completeBtn.dataset.lcClicked = "true";
               completeBtn.click();
             }
@@ -301,9 +302,11 @@ function runBulkAutomation() {
             setTimeout(() => {
               const nextBtn = findNextControl();
               if (nextBtn) {
+                showToast("Bulk Automation: Going to next item...");
                 nextBtn.click();
                 runBulkAutomation();
               } else {
+                showToast("Bulk Automation: Finished or Locked item reached.");
                 chrome.storage.local.set({ isBulkCompletingReadings: false });
                 try {
                   chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
@@ -343,11 +346,13 @@ function runBulkQuizAutomation() {
               solveQuiz(data.geminiApiKey);
             } else {
               // Not a quiz. Skip it!
+              showToast("Bulk Quiz: Skipping to next item...");
               const nextBtn = findNextControl();
               if (nextBtn) {
                 nextBtn.click();
                 runBulkQuizAutomation(); 
               } else {
+                showToast("Bulk Quiz: Finished or Locked item reached.");
                 chrome.storage.local.set({ isBulkCompletingQuizzes: false });
                 try {
                   chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
