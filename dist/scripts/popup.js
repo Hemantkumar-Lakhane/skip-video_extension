@@ -159,8 +159,44 @@ document.getElementById("nextBtn").addEventListener("click", async () => {
   updateStatus(await sendToPage({ type: "GO_NEXT" }));
 });
 
-document.getElementById("settingsBtn").addEventListener("click", () => {
-  chrome.runtime.openOptionsPage();
-});
-
 sendToPage({ type: "GET_STATUS" }).then(updateStatus);
+
+// --- Settings Logic ---
+const defaultSpeedEl = document.getElementById("defaultSpeed");
+const autoMuteEl = document.getElementById("autoMute");
+const focusDefaultEl = document.getElementById("focusDefault");
+const autoNextEl = document.getElementById("autoNext");
+const autoReadingEl = document.getElementById("autoReading");
+const saveStatusEl = document.getElementById("saveStatus");
+
+async function loadSettings() {
+  const settings = await chrome.storage.sync.get({
+    defaultSpeed: "1",
+    autoMute: false,
+    focusDefault: false,
+    autoNext: false,
+    autoReading: false
+  });
+
+  defaultSpeedEl.value = settings.defaultSpeed;
+  autoMuteEl.checked = settings.autoMute;
+  focusDefaultEl.checked = settings.focusDefault;
+  autoNextEl.checked = settings.autoNext;
+  autoReadingEl.checked = settings.autoReading;
+}
+
+async function saveSettings() {
+  await chrome.storage.sync.set({
+    defaultSpeed: defaultSpeedEl.value,
+    autoMute: autoMuteEl.checked,
+    focusDefault: focusDefaultEl.checked,
+    autoNext: autoNextEl.checked,
+    autoReading: autoReadingEl.checked
+  });
+
+  saveStatusEl.textContent = "Settings saved.";
+  setTimeout(() => (saveStatusEl.textContent = ""), 3000);
+}
+
+document.getElementById("saveBtn").addEventListener("click", saveSettings);
+loadSettings();
