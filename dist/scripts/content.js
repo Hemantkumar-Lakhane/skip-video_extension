@@ -210,7 +210,7 @@ function findNextControl() {
 
   return Array.from(document.querySelectorAll("a, button")).find((node) => {
     const text = (node.textContent || "").trim().toLowerCase();
-    return text === "next" || text.startsWith("next ");
+    return text === "next" || text.startsWith("next ") || text.includes("go to next item");
   });
 }
 
