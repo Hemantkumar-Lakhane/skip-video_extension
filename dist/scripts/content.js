@@ -275,12 +275,13 @@ function runBulkAutomation() {
       chrome.storage.local.get("isBulkCompletingReadings", (latestData) => {
         if (!latestData.isBulkCompletingReadings) return;
 
-        // Scroll to bottom to trigger any lazy loading of the Complete button
+        showToast("Bulk Automation: Checking page...");
         window.scrollTo(0, document.body.scrollHeight);
 
         setTimeout(() => {
           const completeBtn = findCompleteButton();
           if (completeBtn && !completeBtn.dataset.lcClicked) {
+            showToast("Bulk Automation: Completing reading...");
             completeBtn.dataset.lcClicked = "true";
             completeBtn.scrollIntoView({ behavior: "instant", block: "center" });
             completeBtn.click();
@@ -289,19 +290,21 @@ function runBulkAutomation() {
           setTimeout(() => {
             const nextBtn = findNextControl();
             if (nextBtn) {
+              showToast("Bulk Automation: Going to next item...");
               nextBtn.scrollIntoView({ behavior: "instant", block: "center" });
               nextBtn.click();
               runBulkAutomation();
             } else {
+              showToast("Bulk Automation: Finished or Locked item reached.");
               chrome.storage.local.set({ isBulkCompletingReadings: false });
               try {
                 chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
               } catch (e) {}
             }
           }, 300);
-        }, 500); // 500ms delay after scrolling
+        }, 500); 
       });
-    }, 1500); // Reduced SPA navigation wait to 1.5s
+    }, 1500);
   });
 }
 
