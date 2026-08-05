@@ -50,13 +50,16 @@ function applySettingsToVideo(video, speed, shouldMute) {
 }
 
 async function loadSettings() {
-  const defaults = { defaultSpeed: "1", autoMute: false, focusDefault: false };
+  const defaults = { defaultSpeed: "1", autoMute: false, focusDefault: false, autoNext: false };
   return chrome.storage.sync.get(defaults);
 }
+
+let autoNextEnabled = false;
 
 async function applyDefaultSettings() {
   const settings = await loadSettings();
   const video = getVideo();
+  autoNextEnabled = settings.autoNext;
   applySettingsToVideo(video, settings.defaultSpeed, settings.autoMute);
   if (settings.focusDefault) setFocusMode(true);
 }
@@ -159,6 +162,7 @@ applyDefaultSettings();
 
 const observer = new MutationObserver(() => {
   if (state.focusMode) setFocusMode(true);
+  checkAndAttachEndedListener();
 });
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -183,4 +187,22 @@ function findNextControl() {
     const text = (node.textContent || "").trim().toLowerCase();
     return text === "next" || text.startsWith("next ");
   });
+}
+
+let attachedVideo = null;
+
+function handleVideoEnded() {
+  if (autoNextEnabled) {
+    const nextButton = findNextControl();
+    if (nextButton) nextButton.click();
+  }
+}
+
+function checkAndAttachEndedListener() {
+  const video = getVideo();
+  if (video && video !== attachedVideo) {
+    if (attachedVideo) attachedVideo.removeEventListener("ended", handleVideoEnded);
+    video.addEventListener("ended", handleVideoEnded);
+    attachedVideo = video;
+  }
 }

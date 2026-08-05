@@ -89,7 +89,7 @@ async function testContentScript() {
       },
       storage: {
         sync: {
-          get: async () => ({ defaultSpeed: "1.5", autoMute: true, focusDefault: false })
+          get: async () => ({ defaultSpeed: "1.5", autoMute: true, focusDefault: false, autoNext: true })
         }
       }
     },
@@ -260,7 +260,7 @@ async function testSettingsScript() {
       storage: {
         sync: {
           async get() {
-            return { defaultSpeed: "2", autoMute: true, focusDefault: true };
+            return { defaultSpeed: "2", autoMute: true, focusDefault: true, autoNext: true };
           },
           async set(value) {
             Object.assign(saved, value);
@@ -280,6 +280,7 @@ async function testSettingsScript() {
   assert.strictEqual(element("defaultSpeed").value, "2");
   assert.strictEqual(element("autoMute").checked, true);
   assert.strictEqual(element("focusDefault").checked, true);
+  assert.strictEqual(element("autoNext").checked, true);
 
   const saveHandler = handlers.find((handler) => handler.id === "saveBtn");
   assert(saveHandler, "settings save button should register a click handler");
@@ -287,7 +288,8 @@ async function testSettingsScript() {
   assert.deepStrictEqual(saved, {
     defaultSpeed: "2",
     autoMute: true,
-    focusDefault: true
+    focusDefault: true,
+    autoNext: true
   });
 }
 
