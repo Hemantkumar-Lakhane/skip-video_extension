@@ -229,6 +229,12 @@ function checkAndAttachEndedListener() {
     if (attachedVideo) attachedVideo.removeEventListener("ended", handleVideoEnded);
     video.addEventListener("ended", handleVideoEnded);
     attachedVideo = video;
+    
+    try {
+      chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+    } catch (e) {
+      // Ignore if extension context is invalidated
+    }
   }
 }
 
@@ -261,33 +267,29 @@ function runBulkAutomation() {
   chrome.storage.local.get("isBulkCompletingReadings", (data) => {
     if (!data.isBulkCompletingReadings) return;
 
-    showToast("Bulk Automation: Checking page...");
-
     setTimeout(() => {
       const completeBtn = findCompleteButton();
       
       if (completeBtn && !completeBtn.dataset.lcClicked) {
-        showToast("Bulk Automation: Completing reading...");
         completeBtn.dataset.lcClicked = "true";
         completeBtn.click();
         
+        try {
+          chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+        } catch (e) {}
+        
         setTimeout(() => {
-          showToast("Bulk Automation: Refreshing to verify...");
-          setTimeout(() => {
-            window.location.reload();
-          }, 1500);
-        }, 1000);
+          window.location.reload();
+        }, 500);
       } else {
         const nextBtn = findNextControl();
         if (nextBtn) {
-          showToast("Bulk Automation: Skipping to next item...");
           nextBtn.click();
         } else {
-          showToast("Bulk Automation: End of module reached.");
           chrome.storage.local.set({ isBulkCompletingReadings: false });
         }
       }
-    }, 2500); // Wait 2.5s to let dynamic content (React) render the buttons
+    }, 500); // Reduced delay to 500ms
   });
 }
 

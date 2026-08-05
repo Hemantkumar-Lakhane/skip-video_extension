@@ -10,3 +10,11 @@ chrome.commands.onCommand.addListener(async (command) => {
     chrome.tabs.sendMessage(tab.id, { type: "SPEED_STEP", delta: 0.25 });
   }
 });
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === "OPEN_GITHUB") {
+    chrome.tabs.create({ url: "https://github.com/Hemantkumar-Lakhane" });
+    sendResponse({ success: true });
+    return true;
+  }
+});

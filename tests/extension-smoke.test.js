@@ -85,7 +85,8 @@ async function testContentScript() {
           addListener(fn) {
             listener = fn;
           }
-        }
+        },
+        sendMessage(msg) {}
       },
       storage: {
         local: {
@@ -334,6 +335,7 @@ async function testSettingsScript() {
 
 async function testBackgroundScript() {
   let commandListener;
+  let messageListener;
   const sent = [];
   const context = {
     chrome: {
@@ -344,7 +346,17 @@ async function testBackgroundScript() {
           }
         }
       },
+      runtime: {
+        onMessage: {
+          addListener(fn) {
+            messageListener = fn;
+          }
+        }
+      },
       tabs: {
+        create(opts) {
+          sent.push({ type: "tabs.create", opts });
+        },
         async query() {
           return [{ id: 11 }];
         },
@@ -361,6 +373,12 @@ async function testBackgroundScript() {
   assert.strictEqual(JSON.stringify(sent), JSON.stringify([
     { tabId: 11, message: { type: "TOGGLE_FOCUS" } },
     { tabId: 11, message: { type: "SPEED_STEP", delta: 0.25 } }
+  ]));
+  
+  sent.length = 0; // clear
+  messageListener({ type: "OPEN_GITHUB" }, null, () => {});
+  assert.strictEqual(JSON.stringify(sent), JSON.stringify([
+    { type: "tabs.create", opts: { url: "https://github.com/Hemantkumar-Lakhane" } }
   ]));
 }
 
