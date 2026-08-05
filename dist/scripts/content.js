@@ -157,6 +157,27 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === "TOGGLE_AUTO_NEXT") {
+    autoNextEnabled = message.enabled;
+    sendResponse({ autoNext: autoNextEnabled });
+    return true;
+  }
+
+  if (message.type === "COMPLETE_READING") {
+    const completeBtn = findCompleteButton();
+    if (completeBtn) {
+      completeBtn.click();
+      setTimeout(() => {
+        const nextBtn = findNextControl();
+        if (nextBtn) nextBtn.click();
+      }, 1000);
+      sendResponse({ success: true });
+    } else {
+      sendResponse({ success: false });
+    }
+    return true;
+  }
+
   return false;
 });
 
@@ -165,7 +186,6 @@ applyDefaultSettings();
 const observer = new MutationObserver(() => {
   if (state.focusMode) setFocusMode(true);
   checkAndAttachEndedListener();
-  if (autoReadingEnabled) checkAndCompleteReading();
 });
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -215,21 +235,4 @@ function findCompleteButton() {
     const text = (node.textContent || "").trim().toLowerCase();
     return text === "mark as completed" || text === "mark as complete";
   });
-}
-
-function checkAndCompleteReading() {
-  const completeBtn = findCompleteButton();
-  if (completeBtn && !completeBtn.dataset.lcClicked) {
-    completeBtn.dataset.lcClicked = "true";
-    
-    setTimeout(() => {
-      completeBtn.click();
-      
-      setTimeout(() => {
-        const nextButton = findNextControl();
-        if (nextButton) nextButton.click();
-      }, 1000);
-      
-    }, 10000);
-  }
 }

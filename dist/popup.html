@@ -13,6 +13,7 @@
           <p class="eyebrow">Video controller</p>
           <h1>Study Skipper</h1>
         </div>
+        <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">...</button>
       </header>
 
       <section class="video-card">
@@ -57,53 +58,12 @@
       </section>
 
       <section class="panel">
-        <div class="panel-title">Settings</div>
-        
-        <label for="defaultSpeed">Default video speed</label>
-        <select id="defaultSpeed" style="margin-bottom: 12px;">
-          <option value="1">1x</option>
-          <option value="1.25">1.25x</option>
-          <option value="1.5">1.5x</option>
-          <option value="2">2x</option>
-          <option value="4">4x</option>
-          <option value="8">8x</option>
-          <option value="16">16x</option>
-        </select>
-
-        <div class="setting-row" style="margin-bottom: 12px;">
-          <div>
-            <label for="autoMute">Auto mute videos</label>
-            <p>Mute the lesson video when controls are applied.</p>
-          </div>
-          <input type="checkbox" id="autoMute" />
+        <div class="panel-title">Automations</div>
+        <div class="primary-grid">
+          <button id="completeReadingBtn" class="primary">Complete Reading</button>
+          <button id="completeQuizBtn" class="primary" disabled style="opacity: 0.5; cursor: not-allowed;">Complete Quiz</button>
         </div>
-
-        <div class="setting-row" style="margin-bottom: 12px;">
-          <div>
-            <label for="focusDefault">Start with focus mode</label>
-            <p>Hide common sidebars and sticky panels.</p>
-          </div>
-          <input type="checkbox" id="focusDefault" />
-        </div>
-
-        <div class="setting-row" style="margin-bottom: 12px;">
-          <div>
-            <label for="autoNext">Auto play next</label>
-            <p>Automatically click next when a video finishes playing.</p>
-          </div>
-          <input type="checkbox" id="autoNext" />
-        </div>
-
-        <div class="setting-row">
-          <div>
-            <label for="autoReading">Auto complete readings</label>
-            <p>Mark readings as complete and go to next after 10s.</p>
-          </div>
-          <input type="checkbox" id="autoReading" />
-        </div>
-
-        <button id="saveBtn" class="save-btn">Save Settings</button>
-        <p id="saveStatus" class="status-msg"></p>
+        <button id="toggleAutoNextBtn" class="primary" style="margin-top: 8px; width: 100%;">Auto Play Next: OFF</button>
       </section>
     </main>
     <script src="scripts/popup.js"></script>

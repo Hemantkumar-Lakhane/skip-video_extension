@@ -17,6 +17,7 @@
   "action": {
     "default_popup": "dist/popup.html"
   },
+  "options_page": "dist/settings.html",
   "content_scripts": [
     {
       "run_at": "document_idle",

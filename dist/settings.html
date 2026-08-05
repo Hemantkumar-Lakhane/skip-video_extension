@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learning Companion Settings</title>
+    <link rel="stylesheet" href="ui/settings.css" />
+  </head>
+  <body>
+    <main class="settings">
+      <header>
+        <p class="eyebrow">Learning Companion</p>
+        <h1>Settings</h1>
+      </header>
+
+      <section>
+        <label for="defaultSpeed">Default video speed</label>
+        <select id="defaultSpeed">
+          <option value="1">1x</option>
+          <option value="1.25">1.25x</option>
+          <option value="1.5">1.5x</option>
+          <option value="2">2x</option>
+          <option value="4">4x</option>
+          <option value="8">8x</option>
+          <option value="16">16x</option>
+        </select>
+      </section>
+
+      <section class="setting-row">
+        <div>
+          <label for="autoMute">Auto mute videos</label>
+          <p>Mute the lesson video when controls are applied.</p>
+        </div>
+        <input type="checkbox" id="autoMute" />
+      </section>
+
+      <section class="setting-row">
+        <div>
+          <label for="focusDefault">Start with focus mode</label>
+          <p>Hide common sidebars and sticky panels when a lesson page opens.</p>
+        </div>
+        <input type="checkbox" id="focusDefault" />
+      </section>
+
+      <button id="saveBtn">Save Settings</button>
+      <p id="status" class="status"></p>
+    </main>
+    <script src="scripts/settings.js"></script>
+  </body>
+</html>

@@ -177,7 +177,6 @@ async function testContentScript() {
 async function testPopupScript() {
   const elements = new Map();
   const handlers = [];
-  const saved = {};
   const speedButtons = ["1", "2", "4"].map((speed) => ({
     dataset: { speed },
     addEventListener(event, fn) {
@@ -189,7 +188,6 @@ async function testPopupScript() {
     if (!elements.has(id)) {
       elements.set(id, {
         id,
-        checked: false,
         value: "",
         textContent: "",
         style: {},
@@ -204,14 +202,15 @@ async function testPopupScript() {
   const sentMessages = [];
   const context = {
     chrome: {
+      runtime: {
+        openOptionsPage() {
+          context.openedOptions = true;
+        }
+      },
       storage: {
         sync: {
-          async get() {
-            return { defaultSpeed: "2", autoMute: true, focusDefault: true, autoNext: true, autoReading: true };
-          },
-          async set(value) {
-            Object.assign(saved, value);
-          }
+          get: async () => ({ autoNext: true }),
+          set: async () => {}
         }
       },
       tabs: {
@@ -230,9 +229,6 @@ async function testPopupScript() {
         return selector === ".speed-btn" ? speedButtons : [];
       }
     },
-    setTimeout(fn) {
-      fn();
-    },
     URL,
     console
   };
@@ -241,13 +237,56 @@ async function testPopupScript() {
   await new Promise((resolve) => setImmediate(resolve));
   assert(handlers.some((handler) => handler.id === "endBtn"));
   assert(handlers.some((handler) => handler.id === "nextBtn"));
+  assert(handlers.some((handler) => handler.id === "completeReadingBtn"));
+  assert(handlers.some((handler) => handler.id === "toggleAutoNextBtn"));
   assert(sentMessages.some((entry) => entry.message.type === "GET_STATUS"));
+}
 
+async function testSettingsScript() {
+  const elements = new Map();
+  const handlers = [];
+  const saved = {};
+
+  function element(id) {
+    if (!elements.has(id)) {
+      elements.set(id, {
+        id,
+        checked: false,
+        textContent: "",
+        value: "",
+        addEventListener(event, fn) {
+          handlers.push({ event, fn, id });
+        }
+      });
+    }
+    return elements.get(id);
+  }
+
+  const context = {
+    chrome: {
+      storage: {
+        sync: {
+          async get() {
+            return { defaultSpeed: "2", autoMute: true, focusDefault: true };
+          },
+          async set(value) {
+            Object.assign(saved, value);
+          }
+        }
+      }
+    },
+    document: { getElementById: element },
+    setTimeout(fn) {
+      fn();
+    },
+    console
+  };
+
+  runScript("dist/scripts/settings.js", context);
+  await new Promise((resolve) => setImmediate(resolve));
   assert.strictEqual(element("defaultSpeed").value, "2");
   assert.strictEqual(element("autoMute").checked, true);
   assert.strictEqual(element("focusDefault").checked, true);
-  assert.strictEqual(element("autoNext").checked, true);
-  assert.strictEqual(element("autoReading").checked, true);
 
   const saveHandler = handlers.find((handler) => handler.id === "saveBtn");
   assert(saveHandler, "settings save button should register a click handler");
@@ -255,9 +294,7 @@ async function testPopupScript() {
   assert.deepStrictEqual(saved, {
     defaultSpeed: "2",
     autoMute: true,
-    focusDefault: true,
-    autoNext: true,
-    autoReading: true
+    focusDefault: true
   });
 }
 
@@ -297,6 +334,7 @@ async function testBackgroundScript() {
   testManifest();
   await testContentScript();
   await testPopupScript();
+  await testSettingsScript();
   await testBackgroundScript();
   console.log("extension smoke tests passed");
 })();
