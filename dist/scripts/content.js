@@ -345,18 +345,31 @@ function runBulkQuizAutomation() {
               showToast("Bulk Quiz: Quiz detected! Solving...");
               solveQuiz(data.geminiApiKey);
             } else {
-              // Not a quiz. Skip it!
-              showToast("Bulk Quiz: Skipping to next item...");
-              const nextBtn = findNextControl();
-              if (nextBtn) {
-                nextBtn.click();
-                runBulkQuizAutomation(); 
+              // Check if we are on a quiz landing page
+              const startQuizBtn = Array.from(document.querySelectorAll("button, a")).find(node => {
+                const text = (node.textContent || "").trim().toLowerCase();
+                return text === "start assignment" || text === "resume assignment" || text === "start quiz" || text === "resume quiz";
+              });
+
+              if (startQuizBtn) {
+                showToast("Bulk Quiz: Entering assignment...");
+                startQuizBtn.scrollIntoView({ behavior: "instant", block: "center" });
+                startQuizBtn.click();
+                bulkQuizTimeoutId = setTimeout(runBulkQuizAutomation, 1000); // Give it time to load the quiz
               } else {
-                showToast("Bulk Quiz: Finished or Locked item reached.");
-                chrome.storage.local.set({ isBulkCompletingQuizzes: false });
-                try {
-                  chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
-                } catch (e) {}
+                // Not a quiz. Skip it!
+                showToast("Bulk Quiz: Skipping to next item...");
+                const nextBtn = findNextControl();
+                if (nextBtn) {
+                  nextBtn.click();
+                  runBulkQuizAutomation(); 
+                } else {
+                  showToast("Bulk Quiz: Finished or Locked item reached.");
+                  chrome.storage.local.set({ isBulkCompletingQuizzes: false });
+                  try {
+                    chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+                  } catch (e) {}
+                }
               }
             }
           });
