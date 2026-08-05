@@ -277,12 +277,14 @@ function showToast(message) {
 let bulkTimeoutId = null;
 
 function runBulkAutomation() {
+  if (!chrome.runtime?.id) return;
   chrome.storage.local.get("isBulkCompletingReadings", (data) => {
     if (!data.isBulkCompletingReadings) return;
 
     if (bulkTimeoutId) clearTimeout(bulkTimeoutId);
 
     bulkTimeoutId = setTimeout(() => {
+      if (!chrome.runtime?.id) return;
       chrome.storage.local.get("isBulkCompletingReadings", (latestData) => {
         if (!latestData.isBulkCompletingReadings) return;
 
@@ -322,12 +324,14 @@ function runBulkAutomation() {
 let bulkQuizTimeoutId = null;
 
 function runBulkQuizAutomation() {
+  if (!chrome.runtime?.id) return;
   chrome.storage.local.get(["isBulkCompletingQuizzes", "geminiApiKey"], (data) => {
     if (!data.isBulkCompletingQuizzes) return;
 
     if (bulkQuizTimeoutId) clearTimeout(bulkQuizTimeoutId);
 
     bulkQuizTimeoutId = setTimeout(() => {
+      if (!chrome.runtime?.id) return;
       chrome.storage.local.get("isBulkCompletingQuizzes", (latestData) => {
         if (!latestData.isBulkCompletingQuizzes) return;
 
@@ -363,7 +367,11 @@ function runBulkQuizAutomation() {
 
 // Check if we should continue bulk automation on page load
 let currentUrl = location.href;
-setInterval(() => {
+const urlPollerId = setInterval(() => {
+  if (!chrome.runtime?.id) {
+    clearInterval(urlPollerId);
+    return;
+  }
   if (location.href !== currentUrl) {
     currentUrl = location.href;
     chrome.storage.local.get(["isBulkCompletingReadings", "isBulkCompletingQuizzes"], (data) => {
