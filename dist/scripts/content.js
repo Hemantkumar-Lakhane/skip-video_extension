@@ -163,25 +163,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
-  if (message.type === "COMPLETE_READING") {
-    const completeBtn = findCompleteButton();
-    if (completeBtn) {
-      showToast("Automation: Marking reading as completed...");
-      completeBtn.click();
-      
-      setTimeout(() => {
-        showToast("Automation: Refreshing page to verify...");
-        
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
-      }, 1000);
+  if (message.type === "START_BULK") {
+    chrome.storage.local.set({ isBulkCompletingReadings: true }, () => {
+      showToast("Bulk Automation Started!");
+      runBulkAutomation();
+    });
+    sendResponse({ success: true });
+    return true;
+  }
 
-      sendResponse({ success: true });
-    } else {
-      showToast("Automation: No uncompleted reading found.");
-      sendResponse({ success: false });
-    }
+  if (message.type === "STOP_BULK") {
+    chrome.storage.local.set({ isBulkCompletingReadings: false }, () => {
+      showToast("Bulk Automation Stopped.");
+    });
+    sendResponse({ success: true });
     return true;
   }
 
@@ -261,3 +256,40 @@ function showToast(message) {
     toast.classList.remove("lc-toast-show");
   }, 3000);
 }
+
+function runBulkAutomation() {
+  chrome.storage.local.get("isBulkCompletingReadings", (data) => {
+    if (!data.isBulkCompletingReadings) return;
+
+    showToast("Bulk Automation: Checking page...");
+
+    setTimeout(() => {
+      const completeBtn = findCompleteButton();
+      
+      if (completeBtn && !completeBtn.dataset.lcClicked) {
+        showToast("Bulk Automation: Completing reading...");
+        completeBtn.dataset.lcClicked = "true";
+        completeBtn.click();
+        
+        setTimeout(() => {
+          showToast("Bulk Automation: Refreshing to verify...");
+          setTimeout(() => {
+            window.location.reload();
+          }, 1500);
+        }, 1000);
+      } else {
+        const nextBtn = findNextControl();
+        if (nextBtn) {
+          showToast("Bulk Automation: Skipping to next item...");
+          nextBtn.click();
+        } else {
+          showToast("Bulk Automation: End of module reached.");
+          chrome.storage.local.set({ isBulkCompletingReadings: false });
+        }
+      }
+    }, 2500); // Wait 2.5s to let dynamic content (React) render the buttons
+  });
+}
+
+// Check if we should continue bulk automation on page load
+runBulkAutomation();

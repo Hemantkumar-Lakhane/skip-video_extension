@@ -192,5 +192,9 @@ toggleAutoNextBtn.addEventListener("click", async () => {
 });
 
 document.getElementById("completeReadingBtn").addEventListener("click", async () => {
-  await sendToPage({ type: "COMPLETE_READING" });
+  await sendToPage({ type: "START_BULK" });
+});
+
+document.getElementById("stopBulkBtn").addEventListener("click", async () => {
+  await sendToPage({ type: "STOP_BULK" });
 });

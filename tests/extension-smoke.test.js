@@ -88,6 +88,16 @@ async function testContentScript() {
         }
       },
       storage: {
+        local: {
+          get: (key, cb) => {
+            if (cb) cb({ isBulkCompletingReadings: false });
+            return Promise.resolve({ isBulkCompletingReadings: false });
+          },
+          set: (obj, cb) => {
+            if (cb) cb();
+            return Promise.resolve();
+          }
+        },
         sync: {
           get: async () => ({ defaultSpeed: "1.5", autoMute: true, focusDefault: false, autoNext: true, autoReading: true })
         }
@@ -95,6 +105,15 @@ async function testContentScript() {
     },
     document: {
       documentElement: { classList: createClassList() },
+      getElementById() {
+        return null;
+      },
+      createElement() {
+        return { classList: createClassList() };
+      },
+      body: {
+        appendChild() {}
+      },
       querySelector(selector) {
         return selector === "video" ? video : null;
       },
@@ -106,6 +125,10 @@ async function testContentScript() {
       constructor() {}
       observe() {}
     },
+    setTimeout(fn) {
+      fn();
+    },
+    clearTimeout() {},
     URL,
     console
   };
@@ -165,6 +188,16 @@ async function testContentScript() {
   });
   assert.strictEqual(nextNode.clicked, true);
   assert.strictEqual(response.found, true);
+
+  listener({ type: "START_BULK" }, null, (value) => {
+    response = value;
+  });
+  assert.strictEqual(response.success, true);
+  
+  listener({ type: "STOP_BULK" }, null, (value) => {
+    response = value;
+  });
+  assert.strictEqual(response.success, true);
 
   listener({ type: "TOGGLE_FOCUS" }, null, (value) => {
     response = value;
@@ -238,6 +271,7 @@ async function testPopupScript() {
   assert(handlers.some((handler) => handler.id === "endBtn"));
   assert(handlers.some((handler) => handler.id === "nextBtn"));
   assert(handlers.some((handler) => handler.id === "completeReadingBtn"));
+  assert(handlers.some((handler) => handler.id === "stopBulkBtn"));
   assert(handlers.some((handler) => handler.id === "toggleAutoNextBtn"));
   assert(sentMessages.some((entry) => entry.message.type === "GET_STATUS"));
 }
