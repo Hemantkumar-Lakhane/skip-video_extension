@@ -273,6 +273,7 @@ async function testPopupScript() {
   assert(handlers.some((handler) => handler.id === "nextBtn"));
   assert(handlers.some((handler) => handler.id === "completeReadingBtn"));
   assert(handlers.some((handler) => handler.id === "stopBulkBtn"));
+  assert(handlers.some((handler) => handler.id === "completeQuizBtn"));
   assert(handlers.some((handler) => handler.id === "toggleAutoNextBtn"));
   assert(sentMessages.some((entry) => entry.message.type === "GET_STATUS"));
 }
@@ -302,7 +303,7 @@ async function testSettingsScript() {
       storage: {
         sync: {
           async get() {
-            return { defaultSpeed: "2", autoMute: true, focusDefault: true };
+            return { defaultSpeed: "2", autoMute: true, focusDefault: true, geminiApiKey: "AIzaTest" };
           },
           async set(value) {
             Object.assign(saved, value);
@@ -322,6 +323,7 @@ async function testSettingsScript() {
   assert.strictEqual(element("defaultSpeed").value, "2");
   assert.strictEqual(element("autoMute").checked, true);
   assert.strictEqual(element("focusDefault").checked, true);
+  assert.strictEqual(element("geminiApiKey").value, "AIzaTest");
 
   const saveHandler = handlers.find((handler) => handler.id === "saveBtn");
   assert(saveHandler, "settings save button should register a click handler");
@@ -329,7 +331,8 @@ async function testSettingsScript() {
   assert.deepStrictEqual(saved, {
     defaultSpeed: "2",
     autoMute: true,
-    focusDefault: true
+    focusDefault: true,
+    geminiApiKey: "AIzaTest"
   });
 }
 

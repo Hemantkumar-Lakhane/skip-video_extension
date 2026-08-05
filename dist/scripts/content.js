@@ -163,6 +163,18 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     return true;
   }
 
+  if (message.type === "START_QUIZ_SOLVER") {
+    chrome.storage.sync.get({ geminiApiKey: "" }, (data) => {
+      if (!data.geminiApiKey) {
+        showToast("Error: Please set your Gemini API Key in the extension settings.");
+      } else {
+        solveQuiz(data.geminiApiKey);
+      }
+    });
+    sendResponse({ success: true });
+    return true;
+  }
+
   if (message.type === "START_BULK") {
     chrome.storage.local.set({ isBulkCompletingReadings: true }, () => {
       showToast("Bulk Automation Started!");
@@ -304,3 +316,97 @@ function runBulkAutomation() {
 
 // Check if we should continue bulk automation on page load
 runBulkAutomation();
+
+async function solveQuiz(apiKey) {
+  showToast("AI Auto-Solver: Analyzing quiz...");
+
+  const quizText = document.body.innerText.substring(0, 30000);
+  const prompt = `You are an expert. I will provide the text of a multiple-choice quiz.
+Read the questions and options carefully.
+Identify the correct option(s) for each question.
+Return ONLY a valid JSON array of strings, where each string is the EXACT, full text of a correct option.
+If it is a true/false question, return the exact true or false text used in the option.
+Do not include any other text, markdown formatting, or explanations.
+
+Quiz Text:
+${quizText}
+`;
+
+  try {
+    showToast("AI Auto-Solver: Thinking...");
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1 }
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+    let answers = [];
+    try {
+      const jsonStr = resultText.replace(/```json/gi, "").replace(/```/g, "").trim();
+      answers = JSON.parse(jsonStr);
+    } catch (e) {
+      console.error("Failed to parse Gemini response:", resultText);
+      showToast("AI Auto-Solver: Failed to parse AI response.");
+      return;
+    }
+
+    if (!Array.isArray(answers) || answers.length === 0) {
+      showToast("AI Auto-Solver: No answers found.");
+      return;
+    }
+
+    showToast("AI Auto-Solver: Applying answers...");
+    
+    // Select answers
+    const inputs = Array.from(document.querySelectorAll('input[type="radio"], input[type="checkbox"]'));
+    let selectedCount = 0;
+    
+    for (const answerText of answers) {
+      const targetText = answerText.trim().toLowerCase();
+      // Find the best matching input
+      let bestMatch = null;
+      for (const input of inputs) {
+        const labelText = (input.closest('label') || input.parentElement || input).innerText.trim().toLowerCase();
+        // Exact match or very close match
+        if (labelText === targetText || labelText.includes(targetText) || targetText.includes(labelText)) {
+          bestMatch = input;
+          if (labelText === targetText) break; // Exact match, break early
+        }
+      }
+      
+      if (bestMatch && !bestMatch.checked) {
+        bestMatch.scrollIntoView({ behavior: 'instant', block: 'center' });
+        bestMatch.click();
+        selectedCount++;
+      }
+    }
+
+    // Check honor code
+    for (const input of inputs) {
+      if (input.type === 'checkbox') {
+        const labelText = (input.closest('label') || input.parentElement || input).innerText.toLowerCase();
+        if (labelText.includes("honor code") || labelText.includes("understand that submitting")) {
+          if (!input.checked) {
+            input.scrollIntoView({ behavior: 'instant', block: 'center' });
+            input.click();
+          }
+        }
+      }
+    }
+
+    showToast(`AI Auto-Solver: Applied ${selectedCount} answers! Please review before submitting.`);
+
+  } catch (error) {
+    console.error("AI Auto-Solver Error:", error);
+    showToast("AI Auto-Solver: Error calling Gemini API.");
+  }
+}

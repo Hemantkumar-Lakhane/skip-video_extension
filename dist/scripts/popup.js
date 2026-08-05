@@ -195,6 +195,10 @@ document.getElementById("completeReadingBtn").addEventListener("click", async ()
   await sendToPage({ type: "START_BULK" });
 });
 
+document.getElementById("completeQuizBtn").addEventListener("click", async () => {
+  await sendToPage({ type: "START_QUIZ_SOLVER" });
+});
+
 document.getElementById("stopBulkBtn").addEventListener("click", async () => {
   await sendToPage({ type: "STOP_BULK" });
 });
