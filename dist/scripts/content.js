@@ -166,13 +166,20 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message.type === "COMPLETE_READING") {
     const completeBtn = findCompleteButton();
     if (completeBtn) {
+      showToast("Automation: Marking reading as completed...");
       completeBtn.click();
+      
       setTimeout(() => {
-        const nextBtn = findNextControl();
-        if (nextBtn) nextBtn.click();
+        showToast("Automation: Refreshing page to verify...");
+        
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }, 1000);
+
       sendResponse({ success: true });
     } else {
+      showToast("Automation: No uncompleted reading found.");
       sendResponse({ success: false });
     }
     return true;
@@ -235,4 +242,22 @@ function findCompleteButton() {
     const text = (node.textContent || "").trim().toLowerCase();
     return text === "mark as completed" || text === "mark as complete";
   });
+}
+
+function showToast(message) {
+  let toast = document.getElementById("lc-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "lc-toast";
+    document.body.appendChild(toast);
+  }
+  
+  toast.textContent = message;
+  toast.classList.add("lc-toast-show");
+  
+  if (toast.hideTimeout) clearTimeout(toast.hideTimeout);
+  
+  toast.hideTimeout = setTimeout(() => {
+    toast.classList.remove("lc-toast-show");
+  }, 3000);
 }

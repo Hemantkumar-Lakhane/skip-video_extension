@@ -10,3 +10,29 @@
   outline: 3px solid rgba(31, 111, 235, 0.35);
   outline-offset: 3px;
 }
+
+#lc-toast {
+  visibility: hidden;
+  min-width: 250px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  padding: 16px;
+  position: fixed;
+  z-index: 999999;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: opacity 0.3s, bottom 0.3s, visibility 0.3s;
+  opacity: 0;
+}
+
+#lc-toast.lc-toast-show {
+  visibility: visible;
+  opacity: 1;
+  bottom: 50px;
+}
