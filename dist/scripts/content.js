@@ -50,16 +50,18 @@ function applySettingsToVideo(video, speed, shouldMute) {
 }
 
 async function loadSettings() {
-  const defaults = { defaultSpeed: "1", autoMute: false, focusDefault: false, autoNext: false };
+  const defaults = { defaultSpeed: "1", autoMute: false, focusDefault: false, autoNext: false, autoReading: false };
   return chrome.storage.sync.get(defaults);
 }
 
 let autoNextEnabled = false;
+let autoReadingEnabled = false;
 
 async function applyDefaultSettings() {
   const settings = await loadSettings();
   const video = getVideo();
   autoNextEnabled = settings.autoNext;
+  autoReadingEnabled = settings.autoReading;
   applySettingsToVideo(video, settings.defaultSpeed, settings.autoMute);
   if (settings.focusDefault) setFocusMode(true);
 }
@@ -163,6 +165,7 @@ applyDefaultSettings();
 const observer = new MutationObserver(() => {
   if (state.focusMode) setFocusMode(true);
   checkAndAttachEndedListener();
+  if (autoReadingEnabled) checkAndCompleteReading();
 });
 
 observer.observe(document.documentElement, { childList: true, subtree: true });
@@ -204,5 +207,29 @@ function checkAndAttachEndedListener() {
     if (attachedVideo) attachedVideo.removeEventListener("ended", handleVideoEnded);
     video.addEventListener("ended", handleVideoEnded);
     attachedVideo = video;
+  }
+}
+
+function findCompleteButton() {
+  return Array.from(document.querySelectorAll("button")).find((node) => {
+    const text = (node.textContent || "").trim().toLowerCase();
+    return text === "mark as completed" || text === "mark as complete";
+  });
+}
+
+function checkAndCompleteReading() {
+  const completeBtn = findCompleteButton();
+  if (completeBtn && !completeBtn.dataset.lcClicked) {
+    completeBtn.dataset.lcClicked = "true";
+    
+    setTimeout(() => {
+      completeBtn.click();
+      
+      setTimeout(() => {
+        const nextButton = findNextControl();
+        if (nextButton) nextButton.click();
+      }, 1000);
+      
+    }, 10000);
   }
 }
