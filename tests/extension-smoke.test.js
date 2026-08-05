@@ -130,6 +130,9 @@ async function testContentScript() {
       fn();
     },
     clearTimeout() {},
+    setInterval() {},
+    clearInterval() {},
+    location: { href: "http://localhost/" },
     URL,
     console
   };
