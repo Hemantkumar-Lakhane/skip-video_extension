@@ -315,7 +315,7 @@ function runBulkAutomation() {
             }, 100); 
           });
         } catch (e) {}
-      }, 400);
+      }, 2000);
     });
   } catch (e) {}
 }
@@ -374,7 +374,7 @@ function runBulkQuizAutomation() {
             }
           });
         } catch (e) {}
-      }, 400); 
+      }, 2000); 
     });
   } catch (e) {}
 }
