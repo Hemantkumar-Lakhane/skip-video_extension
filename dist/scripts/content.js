@@ -481,6 +481,6 @@ ${quizText}
 
   } catch (error) {
     console.error("AI Auto-Solver Error:", error);
-    showToast("AI Auto-Solver: Error calling Gemini API.");
+    showToast("AI Auto-Solver: " + (error.message || "Error calling API"));
   }
 }
