@@ -229,12 +229,6 @@ function checkAndAttachEndedListener() {
     if (attachedVideo) attachedVideo.removeEventListener("ended", handleVideoEnded);
     video.addEventListener("ended", handleVideoEnded);
     attachedVideo = video;
-    
-    try {
-      chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
-    } catch (e) {
-      // Ignore if extension context is invalidated
-    }
   }
 }
 
