@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Learning Companion",
+  "version": "1.0.0",
+  "author": "Local build",
+  "description": "A free study helper with video speed controls, jump controls, and focus mode.",
+  "permissions": ["storage", "activeTab", "tabs", "scripting"],
+  "background": {
+    "service_worker": "dist/scripts/background.js"
+  },
+  "icons": {
+    "16": "dist/assets/1.png",
+    "32": "dist/assets/2.png",
+    "48": "dist/assets/3.png",
+    "128": "dist/assets/4.png"
+  },
+  "action": {
+    "default_popup": "dist/popup.html"
+  },
+  "options_page": "dist/settings.html",
+  "content_scripts": [
+    {
+      "run_at": "document_idle",
+      "matches": ["*://*.coursera.org/*", "*://*.youtube.com/*"],
+      "js": ["dist/scripts/content.js"],
+      "css": ["dist/ui/content.css"]
+    }
+  ],
+  "commands": {
+    "toggle_focus": {
+      "suggested_key": {
+        "default": "Alt+F",
+        "mac": "Command+F"
+      },
+      "description": "Toggle focus mode"
+    },
+    "speed_up": {
+      "suggested_key": {
+        "default": "Alt+Period",
+        "mac": "Command+Period"
+      },
+      "description": "Increase video speed"
+    }
+  },
+  "host_permissions": ["*://*.coursera.org/*", "*://*.youtube.com/*"]
+}

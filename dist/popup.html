@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Learning Companion</title>
+    <link rel="stylesheet" href="ui/popup.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="header">
+        <div>
+          <p class="eyebrow">Video controller</p>
+          <h1>Study Skipper</h1>
+        </div>
+        <button id="settingsBtn" class="icon-btn" title="Settings" aria-label="Settings">...</button>
+      </header>
+
+      <section class="video-card">
+        <div class="status-row">
+          <span id="status" class="status">Checking page...</span>
+          <span id="timeText" class="time-text">--:-- / --:--</span>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+
+        <div class="primary-grid">
+          <button id="playBtn" class="primary">Play / Pause</button>
+          <button id="endBtn" class="danger">Skip To End</button>
+        </div>
+
+        <div class="jump-grid">
+          <button class="jump-btn" data-seconds="-30">-30s</button>
+          <button class="jump-btn" data-seconds="30">+30s</button>
+          <button class="jump-btn" data-seconds="120">+2m</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-title">Speed</div>
+        <div class="speed-grid">
+          <button class="speed-btn" data-speed="1">1x</button>
+          <button class="speed-btn" data-speed="1.5">1.5x</button>
+          <button class="speed-btn" data-speed="2">2x</button>
+          <button class="speed-btn" data-speed="4">4x</button>
+          <button class="speed-btn" data-speed="8">8x</button>
+          <button class="speed-btn" data-speed="16">16x</button>
+        </div>
+      </section>
+
+      <section class="panel compact">
+        <div class="tool-grid">
+          <button id="muteBtn">Mute</button>
+          <button id="focusBtn">Focus</button>
+          <button id="nextBtn">Next</button>
+        </div>
+      </section>
+    </main>
+    <script src="scripts/popup.js"></script>
+  </body>
+</html>

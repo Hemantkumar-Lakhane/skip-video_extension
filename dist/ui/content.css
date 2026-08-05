@@ -1,0 +1,12 @@
+.lc-hidden {
+  display: none !important;
+}
+
+.lc-focus-mode body {
+  background: #ffffff !important;
+}
+
+.lc-focus-mode video {
+  outline: 3px solid rgba(31, 111, 235, 0.35);
+  outline-offset: 3px;
+}
