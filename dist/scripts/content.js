@@ -288,39 +288,32 @@ function runBulkAutomation() {
         try {
           if (!chrome.runtime?.id) return;
           chrome.storage.local.get("isBulkCompletingReadings", (latestData) => {
-        if (!latestData.isBulkCompletingReadings) return;
+            if (!latestData.isBulkCompletingReadings) return;
 
-        showToast("Bulk Automation: Checking page...");
-        window.scrollTo(0, document.body.scrollHeight);
-
-        setTimeout(() => {
-          const completeBtn = findCompleteButton();
-          if (completeBtn && !completeBtn.dataset.lcClicked) {
-            showToast("Bulk Automation: Completing reading...");
-            completeBtn.dataset.lcClicked = "true";
-            completeBtn.scrollIntoView({ behavior: "instant", block: "center" });
-            completeBtn.click();
-          }
-
-          setTimeout(() => {
-            const nextBtn = findNextControl();
-            if (nextBtn) {
-              showToast("Bulk Automation: Going to next item...");
-              nextBtn.scrollIntoView({ behavior: "instant", block: "center" });
-              nextBtn.click();
-              runBulkAutomation();
-            } else {
-              showToast("Bulk Automation: Finished or Locked item reached.");
-              chrome.storage.local.set({ isBulkCompletingReadings: false });
-              try {
-                chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
-              } catch (e) {}
+            window.scrollTo(0, document.body.scrollHeight);
+            
+            const completeBtn = findCompleteButton();
+            if (completeBtn && !completeBtn.dataset.lcClicked) {
+              completeBtn.dataset.lcClicked = "true";
+              completeBtn.click();
             }
-          }, 300);
-        }, 500); 
-      });
-    } catch (e) {}
-    }, 1500);
+
+            setTimeout(() => {
+              const nextBtn = findNextControl();
+              if (nextBtn) {
+                nextBtn.click();
+                runBulkAutomation();
+              } else {
+                chrome.storage.local.set({ isBulkCompletingReadings: false });
+                try {
+                  chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+                } catch (e) {}
+              }
+            }, 100); 
+          });
+        } catch (e) {}
+      }, 400);
+    });
   } catch (e) {}
 }
 
@@ -338,36 +331,33 @@ function runBulkQuizAutomation() {
         try {
           if (!chrome.runtime?.id) return;
           chrome.storage.local.get("isBulkCompletingQuizzes", (latestData) => {
-        if (!latestData.isBulkCompletingQuizzes) return;
+            if (!latestData.isBulkCompletingQuizzes) return;
 
-        const video = document.querySelector("video");
-        const completeBtn = findCompleteButton();
-        const inputs = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
+            const video = document.querySelector("video");
+            const completeBtn = findCompleteButton();
+            const inputs = document.querySelectorAll('input[type="radio"], input[type="checkbox"]');
 
-        if (!video && !completeBtn && inputs.length > 0) {
-          // It's a quiz!
-          showToast("Bulk Quiz: Quiz detected! Solving...");
-          solveQuiz(data.geminiApiKey);
-          // Wait for user to review, submit, and click Next. URL poller will detect navigation.
-        } else {
-          // Not a quiz. Skip it!
-          showToast("Bulk Quiz: Not a quiz. Skipping...");
-          const nextBtn = findNextControl();
-          if (nextBtn) {
-            nextBtn.scrollIntoView({ behavior: "instant", block: "center" });
-            nextBtn.click();
-            runBulkQuizAutomation(); // Try immediately in case of fast SPA
-          } else {
-            showToast("Bulk Quiz: Finished or Locked item reached.");
-            chrome.storage.local.set({ isBulkCompletingQuizzes: false });
-            try {
-              chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
-            } catch (e) {}
-          }
-        }
-      });
-    } catch (e) {}
-    }, 1500); // Give SPA time to load
+            if (!video && !completeBtn && inputs.length > 0) {
+              // It's a quiz!
+              showToast("Bulk Quiz: Quiz detected! Solving...");
+              solveQuiz(data.geminiApiKey);
+            } else {
+              // Not a quiz. Skip it!
+              const nextBtn = findNextControl();
+              if (nextBtn) {
+                nextBtn.click();
+                runBulkQuizAutomation(); 
+              } else {
+                chrome.storage.local.set({ isBulkCompletingQuizzes: false });
+                try {
+                  chrome.runtime.sendMessage({ type: "OPEN_GITHUB" });
+                } catch (e) {}
+              }
+            }
+          });
+        } catch (e) {}
+      }, 400); 
+    });
   } catch (e) {}
 }
 
